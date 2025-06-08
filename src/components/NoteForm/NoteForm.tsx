@@ -42,9 +42,15 @@ export default function NoteForm({
     <Formik
       initialValues={initialValues}
       validationSchema={NoteSchema}
-      onSubmit={(values, actions) => {
-        onAdd(values);
-        actions.resetForm();
+      onSubmit={async (values, actions) => {
+        try {
+          await Promise.resolve(onAdd(values));
+          actions.resetForm();
+        } catch (error) {
+          console.error(error);
+        } finally {
+          actions.setSubmitting(false);
+        }
       }}
     >
       {({ isSubmitting: formikIsSubmitting }) => (
