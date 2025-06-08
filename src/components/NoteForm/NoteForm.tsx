@@ -44,6 +44,7 @@ export default function NoteForm({
       validationSchema={NoteSchema}
       onSubmit={(values, actions) => {
         onAdd(values);
+        actions.resetForm();
       }}
     >
       {({ isSubmitting: formikIsSubmitting }) => (
