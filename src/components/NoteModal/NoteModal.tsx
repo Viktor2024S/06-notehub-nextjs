@@ -23,10 +23,12 @@ export default function NoteModal({
     };
 
     if (isOpen) {
+      document.body.style.overflow = "hidden";
       window.addEventListener("keydown", handleKeyDown);
     }
 
     return () => {
+      document.body.style.overflow = "unset";
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);

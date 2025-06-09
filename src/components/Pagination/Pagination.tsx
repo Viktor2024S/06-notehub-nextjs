@@ -4,11 +4,13 @@ import css from "./Pagination.module.css";
 interface PaginationProps {
   pageCount: number;
   onPageChange: (selectedItem: { selected: number }) => void;
+  currentPage: number;
 }
 
 export default function Pagination({
   pageCount,
   onPageChange,
+  currentPage,
 }: PaginationProps) {
   return (
     <ReactPaginate
@@ -19,6 +21,7 @@ export default function Pagination({
       pageCount={pageCount}
       previousLabel="<"
       renderOnZeroPageCount={null}
+      forcePage={currentPage - 1}
       containerClassName={css.pagination}
       pageClassName="page-item"
       pageLinkClassName="page-link"

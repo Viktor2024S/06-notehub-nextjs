@@ -10,3 +10,8 @@ export interface Note {
 }
 
 export type NoteData = Pick<Note, "title" | "content" | "tag">;
+
+// export interface PaginatedNotesResponse {
+//   notes: Note[];
+//   totalPages: number;
+// }
