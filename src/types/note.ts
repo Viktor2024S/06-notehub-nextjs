@@ -1,7 +1,7 @@
 export type Tag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
 
 export interface Note {
-  id: string;
+  _id: number;
   title: string;
   content: string;
   tag: Tag;

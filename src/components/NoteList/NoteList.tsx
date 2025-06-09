@@ -22,14 +22,14 @@ export default function NoteList({ notes }: NoteListProps) {
     },
   });
 
-  const handleDelete = (noteId: string) => {
+  const handleDelete = (noteId: number) => {
     deleteMutation.mutate(noteId);
   };
 
   return (
     <ul className={css.list}>
       {notes.map((note) => (
-        <li key={note.id} className={css.listItem}>
+        <li key={note._id} className={css.listItem}>
           <div>
             <h2 className={css.title}>{note.title}</h2>
             <p className={css.content}>{note.content}</p>
@@ -38,7 +38,7 @@ export default function NoteList({ notes }: NoteListProps) {
             <span className={css.tag}>{note.tag}</span>
             <button
               className={css.button}
-              onClick={() => handleDelete(note.id)}
+              onClick={() => handleDelete(note._id)}
               disabled={deleteMutation.isPending}
             >
               Delete
