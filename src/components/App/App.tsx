@@ -47,25 +47,27 @@ export default function App() {
 
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
+
+        {totalPages > 1 && !isLoading && (
+          <div className={css.paginationContainer}>
+            <Pagination
+              pageCount={totalPages}
+              onPageChange={handlePageChange}
+              currentPage={currentPage}
+            />
+          </div>
+        )}
+
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
       </header>
 
       {isLoading && <Loader />}
+
       {isError && <ErrorMessage message={error.message} />}
 
       {notes.length > 0 && <NoteList notes={notes} />}
-
-      {totalPages > 1 && !isLoading && (
-        <div className={css.paginationContainer}>
-          <Pagination
-            pageCount={totalPages}
-            onPageChange={handlePageChange}
-            currentPage={currentPage}
-          />
-        </div>
-      )}
 
       {isModalOpen && (
         <NoteModal onClose={() => setIsModalOpen(false)}>
