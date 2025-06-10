@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import { Toaster, toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
-import { fetchNotes, createNote } from "../../services/noteService";
-import { NoteData } from "../../types/note";
+import { fetchNotes } from "../../services/noteService";
 
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
@@ -21,33 +20,21 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const queryClient = useQueryClient();
-
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchQuery],
     queryFn: () => fetchNotes(currentPage, debouncedSearchQuery),
-  });
-
-  const createNoteMutation = useMutation({
-    mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      toast.success("Note created successfully!");
-      setIsModalOpen(false);
-    },
-    onError: (err) => {
-      toast.error(`Error creating note: ${err.message}`);
-    },
+    placeholderData: keepPreviousData,
   });
 
   const handlePageChange = ({ selected }: { selected: number }) => {
     setCurrentPage(selected + 1);
   };
 
-  const handleAddNote = (newNote: NoteData) => {
-    createNoteMutation.mutate(newNote);
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    setCurrentPage(1);
   };
 
   const notes = data?.notes ?? [];
@@ -59,17 +46,7 @@ export default function App() {
       <h1>NoteHub</h1>
 
       <header className={css.toolbar}>
-        <SearchBox value={searchQuery} onChange={setSearchQuery} />
-
-        {totalPages > 1 && !isLoading && (
-          <div className={css.paginationContainer}>
-            <Pagination
-              pageCount={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        )}
-
+        <SearchBox value={searchQuery} onChange={handleSearchChange} />
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
@@ -80,13 +57,21 @@ export default function App() {
 
       {notes.length > 0 && <NoteList notes={notes} />}
 
-      <NoteModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <NoteForm
-          onAdd={handleAddNote}
-          onCancel={() => setIsModalOpen(false)}
-          isSubmitting={createNoteMutation.isPending}
-        />
-      </NoteModal>
+      {totalPages > 1 && !isLoading && (
+        <div className={css.paginationContainer}>
+          <Pagination
+            pageCount={totalPages}
+            onPageChange={handlePageChange}
+            currentPage={currentPage}
+          />
+        </div>
+      )}
+
+      {isModalOpen && (
+        <NoteModal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onClose={() => setIsModalOpen(false)} />
+        </NoteModal>
+      )}
     </div>
   );
 }

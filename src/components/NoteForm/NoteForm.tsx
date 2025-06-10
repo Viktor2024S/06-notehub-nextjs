@@ -26,11 +26,10 @@ const NoteSchema = Yup.object().shape({
 const noteTags: Tag[] = ["Todo", "Work", "Personal", "Meeting", "Shopping"];
 
 interface NoteFormProps {
-  onAdd: (newNote: NoteData) => void;
   onClose: () => void;
 }
 
-export default function NoteForm({ onAdd, onClose }: NoteFormProps) {
+export default function NoteForm({ onClose }: NoteFormProps) {
   const queryClient = useQueryClient();
 
   const createNoteMutation = useMutation({
@@ -52,7 +51,7 @@ export default function NoteForm({ onAdd, onClose }: NoteFormProps) {
   };
 
   const handleSubmit = (values: NoteData) => {
-    onAdd(values);
+    createNoteMutation.mutate(values);
   };
 
   return (
