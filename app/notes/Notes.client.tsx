@@ -1,30 +1,39 @@
+"use client";
+
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { Toaster } from "react-hot-toast";
+import { fetchNotes } from "@/lib/api";
+import { Note } from "@/types/note";
 
-import { fetchNotes } from "../../services/noteService";
+import NoteList from "@/components/NoteList/NoteList";
+import SearchBox from "@/components/SearchBox/SearchBox";
+import Pagination from "@/components/Pagination/Pagination";
+import NoteModal from "@/components/NoteModal/NoteModal";
+import Loader from "@/components/Loader/Loader";
 
-import NoteList from "../NoteList/NoteList";
-import SearchBox from "../SearchBox/SearchBox";
-import Pagination from "../Pagination/Pagination";
-import NoteModal from "../NoteModal/NoteModal";
-import Loader from "../Loader/Loader";
-import ErrorMessage from "../ErrorMessage/ErrorMessage";
+import css from "./Notes.module.css";
 
-import css from "./App.module.css";
+interface NotesClientProps {
+  initialData: {
+    notes: Note[];
+    totalPages: number;
+  };
+}
 
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<number>(1);
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+export default function NotesClient({ initialData }: NotesClientProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["notes", currentPage, debouncedSearchQuery],
     queryFn: () => fetchNotes(currentPage, debouncedSearchQuery),
     placeholderData: keepPreviousData,
+    initialData: initialData,
   });
 
   const handlePageChange = ({ selected }: { selected: number }) => {
@@ -40,23 +49,17 @@ export default function App() {
   const totalPages = data?.totalPages ?? 0;
 
   return (
-    <div className={css.app}>
+    <div className={css.container}>
       <Toaster position="top-right" reverseOrder={false} />
-      <h1>NoteHub</h1>
-
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
-
         {totalPages > 1 && !isLoading && (
-          <div className={css.paginationContainer}>
-            <Pagination
-              pageCount={totalPages}
-              onPageChange={handlePageChange}
-              currentPage={currentPage}
-            />
-          </div>
+          <Pagination
+            pageCount={totalPages}
+            onPageChange={handlePageChange}
+            currentPage={currentPage}
+          />
         )}
-
         <button className={css.button} onClick={() => setIsModalOpen(true)}>
           Create note +
         </button>
@@ -64,9 +67,7 @@ export default function App() {
 
       {isLoading && <Loader />}
 
-      {isError && <ErrorMessage message={error.message} />}
-
-      {notes.length > 0 && <NoteList notes={notes} />}
+      {notes.length > 0 ? <NoteList notes={notes} /> : <p>No notes found.</p>}
 
       {isModalOpen && <NoteModal onClose={() => setIsModalOpen(false)} />}
     </div>

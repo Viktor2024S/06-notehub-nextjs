@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = import.meta.env.VITE_NOTEHUB_TOKEN;
+  const token = import.meta.env.process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
