@@ -6,7 +6,7 @@ const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = import.meta.env.process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+  const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -26,14 +26,17 @@ export const fetchNotes = async (
     page: String(page),
     perPage: "12",
   });
-
   if (query) {
     params.append("search", query);
   }
-
   const response: AxiosResponse<PaginatedNotesResponse> = await apiClient.get(
     `/notes?${params.toString()}`
   );
+  return response.data;
+};
+
+export const fetchNoteById = async (id: number): Promise<Note> => {
+  const response: AxiosResponse<Note> = await apiClient.get(`/notes/${id}`);
   return response.data;
 };
 
