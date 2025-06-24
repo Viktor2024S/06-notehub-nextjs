@@ -49,7 +49,7 @@ export default function NotesClient({ initialData }: NotesClientProps) {
   const totalPages = data?.totalPages ?? 0;
 
   return (
-    <div className={css.container}>
+    <div className={css.app}>
       <Toaster position="top-right" reverseOrder={false} />
       <header className={css.toolbar}>
         <SearchBox value={searchQuery} onChange={handleSearchChange} />
