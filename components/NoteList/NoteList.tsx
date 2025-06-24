@@ -7,14 +7,13 @@ import toast from "react-hot-toast";
 
 export default function NoteList({ notes }: { notes: Note[] }) {
   const queryClient = useQueryClient();
-
   const deleteMutation = useMutation({
     mutationFn: deleteNote,
     onSuccess: (deletedNote) => {
       queryClient.invalidateQueries({ queryKey: ["notes"] });
       toast.success(`Note "${deletedNote.title}" deleted!`);
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast.error(`Error deleting note: ${error.message}`);
     },
   });
@@ -26,7 +25,7 @@ export default function NoteList({ notes }: { notes: Note[] }) {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
-        <li key={note.id} className={`${css.listItem} ${css.item}`}>
+        <li key={note.id} className={css.listItem}>
           <div>
             <h2 className={css.title}>{note.title}</h2>
             <p className={css.content}>{note.content}</p>
@@ -34,11 +33,11 @@ export default function NoteList({ notes }: { notes: Note[] }) {
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
             <div className={css.actions}>
-              <Link href={`/notes/${note.id}`} className={css.detailsBtn}>
+              <Link href={`/notes/${note.id}`} className={css.link}>
                 View details
               </Link>
               <button
-                className={css.deleteBtn}
+                className={css.button}
                 onClick={() => handleDelete(note.id)}
                 disabled={deleteMutation.isPending}
               >
