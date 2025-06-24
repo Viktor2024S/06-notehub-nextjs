@@ -1,17 +1,18 @@
-"use client"; // <-- Переконайтесь, що цей рядок є на початку файлу
+"use client";
 
-import { useEffect, useState, useRef } from "react"; // Додайте useRef
+import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   Formik,
   Form,
   Field,
   ErrorMessage as FormikErrorMessage,
+  FormikHelpers,
 } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { createNote } from "@/lib/api"; // Переконайтесь, що шлях правильний
-import { NoteData, Tag } from "@/types/note";
+import { createNote } from "@/lib/api";
+import { NoteData } from "@/types/note";
 import css from "./NoteModal.module.css";
 
 interface NoteModalProps {
@@ -20,31 +21,27 @@ interface NoteModalProps {
 
 export default function NoteModal({ onClose }: NoteModalProps) {
   const [mounted, setMounted] = useState(false);
-  const modalRootRef = useRef<HTMLElement | null>(null); // Використовуємо useRef для зберігання посилання
+  const modalRootRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    // Код, що взаємодіє з `document`, повинен бути тут
-    modalRootRef.current = document.getElementById("modal-root") as HTMLElement;
-    setMounted(true); // Встановлюємо mounted в true, коли компонент змонтується на клієнті
-    // Тут також можна додати створення 'modal-root' div, якщо його немає
-    if (!modalRootRef.current) {
-      const div = document.createElement("div");
-      div.id = "modal-root";
-      document.body.appendChild(div);
-      modalRootRef.current = div;
+    let modalRoot = document.getElementById("modal-root") as HTMLElement | null;
+
+    if (!modalRoot) {
+      modalRoot = document.createElement("div");
+      modalRoot.id = "modal-root";
+      document.body.appendChild(modalRoot);
     }
 
-    // Логіка для блокування скролу тіла, якщо потрібно
+    modalRootRef.current = modalRoot;
+    setMounted(true);
     document.body.style.overflow = "hidden";
+
     return () => {
       document.body.style.overflow = "unset";
     };
   }, []);
 
-  // Якщо компонент ще не змонтувався на клієнті, не рендеримо портал
-  if (!mounted || !modalRootRef.current) {
-    return null;
-  }
+  if (!mounted || !modalRootRef.current) return null;
 
   const initialValues: NoteData = {
     title: "",
@@ -60,13 +57,24 @@ export default function NoteModal({ onClose }: NoteModalProps) {
       .required("Tag is required"),
   });
 
-  const handleSubmit = async (values: NoteData, { setSubmitting }: any) => {
+  const handleSubmit = async (
+    values: NoteData,
+    { setSubmitting }: FormikHelpers<NoteData>
+  ) => {
     try {
       await createNote(values);
       toast.success("Note created successfully!");
-      onClose(); // Закриваємо модалку після успішного створення
-    } catch (error: any) {
-      toast.error(`Error creating note: ${error.message}`);
+      onClose();
+    } catch (error: unknown) {
+      let message = "Unknown error";
+
+      if (error instanceof Error) {
+        message = error.message;
+      } else if (typeof error === "string") {
+        message = error;
+      }
+
+      toast.error(`Error creating note: ${message}`);
     } finally {
       setSubmitting(false);
     }
@@ -144,6 +152,6 @@ export default function NoteModal({ onClose }: NoteModalProps) {
         </Formik>
       </div>
     </div>,
-    modalRootRef.current // Рендеримо в елемент, який отримали через реф
+    modalRootRef.current
   );
 }
